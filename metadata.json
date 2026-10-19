@@ -1,0 +1,6 @@
+{
+  "name": "Smart Thesis CPE",
+  "description": "ระบบจัดเก็บและบริหารข้อมูลปริญญานิพนธ์ สาขาวิศวกรรมคอมพิวเตอร์ มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตเฉลิมพระเกียรติ จังหวัดสกลนคร",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

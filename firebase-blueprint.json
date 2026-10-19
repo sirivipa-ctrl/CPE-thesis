@@ -1,0 +1,185 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile in Smart Thesis CPE with role and departmental information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 200 },
+        "photoURL": { "type": "string", "maxLength": 1024 },
+        "role": { "type": "string", "enum": ["student", "advisor", "admin"] },
+        "department": { "type": "string", "maxLength": 200 },
+        "studentId": { "type": "string", "maxLength": 30 },
+        "phoneNumber": { "type": "string", "maxLength": 50 },
+        "academicRank": { "type": "string", "maxLength": 100 },
+        "room": { "type": "string", "maxLength": 100 },
+        "expertise": { "type": "array" },
+        "quotaTotal": { "type": "number" },
+        "quotaUsed": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
+        "registeredAt": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "displayName", "role"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator designation document",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "role": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Thesis": {
+      "title": "Thesis",
+      "description": "Computer engineering project and thesis submission",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 50 },
+        "titleTh": { "type": "string", "maxLength": 500 },
+        "titleEn": { "type": "string", "maxLength": 500 },
+        "abstractTh": { "type": "string", "maxLength": 5000 },
+        "abstractEn": { "type": "string", "maxLength": 5000 },
+        "academicYear": { "type": "string", "maxLength": 10 },
+        "semester": { "type": "string", "maxLength": 10 },
+        "category": { "type": "string", "maxLength": 100 },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "submitted", "under_review", "revision_required", "approved", "archived"]
+        },
+        "studentIds": { "type": "array" },
+        "studentNames": { "type": "array" },
+        "advisorIds": { "type": "array" },
+        "advisorNames": { "type": "array" },
+        "committeeIds": { "type": "array" },
+        "committeeNames": { "type": "array" },
+        "keywords": { "type": "array" },
+        "progressPercent": { "type": "number" },
+        "viewCount": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "currentMilestone": { "type": "string", "maxLength": 200 },
+        "nextDeadline": { "type": "string", "maxLength": 100 },
+        "pdfUrl": { "type": "string", "maxLength": 2048 },
+        "pdfFileName": { "type": "string", "maxLength": 256 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["code", "titleTh", "academicYear", "category", "status", "studentIds", "advisorIds", "createdBy"]
+    },
+    "ThesisFile": {
+      "title": "ThesisFile",
+      "description": "Uploaded PDF or document asset associated with a thesis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "thesisId": { "type": "string", "maxLength": 128 },
+        "fileType": { "type": "string", "maxLength": 50 },
+        "fileName": { "type": "string", "maxLength": 256 },
+        "fileUrl": { "type": "string", "maxLength": 2048 },
+        "fileSize": { "type": "number" },
+        "mimeType": { "type": "string", "maxLength": 100 },
+        "version": { "type": "number" },
+        "uploadedBy": { "type": "string", "maxLength": 128 },
+        "uploaderName": { "type": "string", "maxLength": 200 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["thesisId", "fileType", "fileName", "fileUrl", "uploadedBy"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Evaluation, approval, or revision feedback from advisor or committee",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "thesisId": { "type": "string", "maxLength": 128 },
+        "reviewerId": { "type": "string", "maxLength": 128 },
+        "reviewerName": { "type": "string", "maxLength": 200 },
+        "reviewerRole": { "type": "string", "maxLength": 50 },
+        "decision": {
+          "type": "string",
+          "enum": ["proposal_approve","approved", "revision_required", "rejected", "comment_only"]
+        },
+        "comments": { "type": "string", "maxLength": 5000 },
+        "score": { "type": "number" },
+        "formType": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["thesisId", "reviewerId", "reviewerName", "decision", "comments"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Audit and activity trail for actions within the Smart Thesis system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "thesisId": { "type": "string", "maxLength": 128 },
+        "actorId": { "type": "string", "maxLength": 128 },
+        "actorName": { "type": "string", "maxLength": 200 },
+        "actorRole": { "type": "string", "maxLength": 50 },
+        "action": { "type": "string", "maxLength": 100 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["actorId", "actorName", "action", "details"]
+    },
+    "PasswordResetRequest": {
+      "title": "PasswordResetRequest",
+      "description": "Password reset and account deletion request submitted by students to admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "userName": { "type": "string", "maxLength": 200 },
+        "studentId": { "type": "string", "maxLength": 30 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "department": { "type": "string", "maxLength": 200 },
+        "status": { "type": "string", "enum": ["pending", "deleted", "rejected"] },
+        "note": { "type": "string", "maxLength": 1000 },
+        "requestedAt": { "type": "string" },
+        "resolvedAt": { "type": "string" }
+      },
+      "required": ["email", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and role information"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Designated system administrator records"
+    },
+    "/theses/{thesisId}": {
+      "schema": "Thesis",
+      "description": "Computer engineering theses and projects"
+    },
+    "/thesisFiles/{fileId}": {
+      "schema": "ThesisFile",
+      "description": "Files and PDF attachments"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Reviews and feedback from advisors and committee members"
+    },
+    "/activityLogs/{logId}": {
+      "schema": "ActivityLog",
+      "description": "System activity logs for tracking audit events"
+    },
+    "/passwordResetRequests/{requestId}": {
+      "schema": "PasswordResetRequest",
+      "description": "Student password reset and account deletion requests to admin"
+    }
+  }
+}

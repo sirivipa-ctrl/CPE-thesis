@@ -1,0 +1,128 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'sirivipa2001@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isAdvisor() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'advisor')
+      );
+    }
+
+    // Collection: Users (Student, Advisor, Admin profiles)
+    // Never allow password fields in Firestore documents
+    match /users/{userId} {
+      allow read: if true;
+      
+      allow create: if isSignedIn() 
+        && (isOwner(userId) || isAdmin())
+        && !('password' in incoming())
+        && (incoming().role != 'admin' || isAdmin());
+
+      allow update: if isSignedIn()
+        && !('password' in incoming())
+        && (
+          isAdmin() ||
+          (isOwner(userId) && incoming().role == existing().role)
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    // Collection: Admins (Authorized administrators only)
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || (isSignedIn() && request.auth.token.email == 'sirivipa2001@gmail.com' && request.auth.uid == adminId);
+    }
+
+    // Collection: Theses (Computer Engineering Senior Projects & Theses)
+    // Read is public so that students, faculty, and visitors can browse the thesis library
+    match /theses/{thesisId} {
+      allow read: if true;
+
+      allow create: if isSignedIn() 
+        && (incoming().createdBy == request.auth.uid || isAdmin());
+
+      allow update: if (
+        // Public view counter increment
+        (incoming().diff(existing()).affectedKeys().hasOnly(['viewCount'])) ||
+        // Project creator, student members, advisors or admin
+        (isSignedIn() && (
+          isAdmin() ||
+          isAdvisor() ||
+          existing().createdBy == request.auth.uid ||
+          (existing().studentIds is list && request.auth.uid in existing().studentIds)
+        ))
+      );
+
+      allow delete: if isAdmin() || (isSignedIn() && existing().createdBy == request.auth.uid);
+    }
+
+    // Collection: Thesis Files (PDFs, templates, presentations)
+    match /thesisFiles/{fileId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (existing().uploadedBy == request.auth.uid || isAdmin());
+    }
+
+    // Collection: Reviews (Official evaluations and public project ratings/reviews)
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (existing().reviewerId == request.auth.uid || isAdmin());
+    }
+
+    // Collection: Activity Logs (Audit Trail)
+    match /activityLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // Collection: Categories (Research Categories in Firestore)
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Collection: Password Reset & Account Deletion Requests
+    match /passwordResetRequests/{requestId} {
+      allow read: if isSignedIn();
+      allow create: if incoming().email is string
+        && incoming().email.size() <= 256
+        && incoming().status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+  }
+}
